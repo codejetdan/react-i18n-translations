@@ -2,20 +2,26 @@
   "name": "react-translations",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "eject": "react-scripts eject",
+    "extract-translations": "formatjs extract 'src/**/*.ts*' --out-file src/lang/en.json --id-interpolation-pattern '[sha512:contenthash:base64:6]' --format simple"
+  },
   "dependencies": {
     "@types/jest": "^26.0.23",
     "@types/node": "^12.20.15",
     "@types/react": "^17.0.9",
     "@types/react-dom": "^17.0.6",
+    "easy-peasy": "^5.0.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-intl": "^5.20.1",
     "react-scripts": "4.0.3",
     "typescript": "^4.3.2"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "eject": "react-scripts eject"
+  "devDependencies": {
+    "@formatjs/cli": "^4.2.19"
   },
   "eslintConfig": {
     "extends": [
@@ -34,5 +40,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "supportedLocales": [
+    "en",
+    "es",
+    "pl"
+  ]
 }
