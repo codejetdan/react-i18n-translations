@@ -1,46 +1,129 @@
-# Getting Started with Create React App
+# 🌐 React Translations
+In this cookbook we will implement quick and simple translations into the React project.
+## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## How-to
+### 1. Add necessary dependencies
+  ```npm i -S react-intl @formatjs/cli```
 
-In the project directory, you can run:
+### 2. Add your favourite state management library
+Or just use the existing one.
 
-### `npm start`
+```npm i -S easy-peasy```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+  The translations state could be even persisted in `React.Context`.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### 3. Add translations `.json` files in `/src/lang/`
 
-### `npm test`
+  ##### `/src/lang/en.json`:
+    {
+      "app.hi": "Hi!"
+    }
+    
+  ##### `/src/lang/es.json`:
+    {
+      "app.hi": "¡Hola!"
+    }
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+  ##### `/src/lang/pl.json`:
+    {
+      "app.hi": "Cześć!"
+    }
 
-### `npm run build`
+### 4. Let's define how the types should look like (just omit this step for non-TS project 😅)
+__`src/translations/types.ts`:__
+  ```
+  import { Action } from "easy-peasy"
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+  // supported languages and their locales codes
+  // for non-TS project, it can be stored as object `const locale = { english: 'en', ...}`
+  export enum Locale {
+    English = 'en',
+    Polish = 'pl',
+    Spanish = 'es',
+  }
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+  // yeah this is how we will store our messages
+  // for every locale, there is one messages object from our JSON files
+  export type AppTranslations = Record<string, string>
+  export type AllMessages = Record<Locale, AppTranslations>
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+  export type TranslationsStore = {
+    locale: Locale,
+    messages: AllMessages,
 
-### `npm run eject`
+    // easy-pasy action function takes the following params: 1. state object 2. the payload
+    selectLanguage: Action<TranslationsStore, Locale>
+  }
+  ```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### 5. Create the translations config file
+__`src/translations/config.ts`:__
+  ```
+  // import JSON translations files
+  import englishMessages from '../lang/en.json';
+  import spanishMessages from '../lang/es.json';
+  import polishMessages from '../lang/pl.json';
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  import { AllMessages, AppTranslations, Locale } from './types';
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+  // list of supported languages using defined `Locale` enumerator
+  export const languages = [
+    {
+      locale: Locale.English,
+      name: 'English',
+    },
+    {
+      locale: Locale.Spanish,
+      name: 'Spanish',
+    },
+    {
+      locale: Locale.Polish,
+      name: 'Polish',
+    },
+  ];
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+  // Let's check if the locale that we want to use, is supported
+  // e.g. retrieving it from `localStorage` - get ready for the next steps 🤗
+  export const isSupportedLocale = (locale?: string) =>
+    Boolean(languages.find(language => language.locale === locale));
 
-## Learn More
+  const messages: AllMessages = {
+    [Locale.English]: englishMessages,
+    [Locale.Spanish]: spanishMessages,
+    [Locale.Polish]: polishMessages,
+  };
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+  export const getMessages = (locale: Locale): AppTranslations =>
+    (isSupportedLocale(locale) && messages[locale]) || englishMessages
+  ```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 6. Set-up the translations store
+Of course you can use whatever lib/solution you want 😊
+
+__`src/translations/store.ts`:__
+  ```
+  import { action, createStore } from "easy-peasy";
+  import { getMessages } from "./config";
+  import { Locale, TranslationsStore } from "./types";
+
+
+  // define the app default languge
+  const defaultLocale = Locale.English;
+
+  export const translationsStore = createStore<TranslationsStore>({
+    locale: defaultLocale, 
+
+    // get the translations for default locale
+    translations: getMessages(defaultLocale),
+
+    selectLanguage: action<TranslationsStore, Locale>((state, locale) => {
+      
+      // let's mutate the state! 😄
+      state.locale = locale
+      state.translations = getMessages(locale)
+    })
+  });
+  ```

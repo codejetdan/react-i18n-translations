@@ -22,7 +22,7 @@ export const languages = [
 
 // Let's check if the locale that we want to use, is supported
 // e.g. retrieving it from `localStorage` - get ready for the next steps 🤗
-export const isSupportedLocale = (locale?: string) =>
+export const isSupportedLocale = (locale?: Locale) =>
   Boolean(languages.find(language => language.locale === locale));
 
 const messages: AllMessages = {
