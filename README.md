@@ -52,7 +52,7 @@ __`src/translations/types.ts`:__
 
   export type TranslationsStore = {
     locale: Locale,
-    messages: AllMessages,
+    translations: AppTranslations,
 
     // easy-pasy action function takes the following params: 1. state object 2. the payload
     selectLanguage: Action<TranslationsStore, Locale>
